@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+</head>
+<body>
+  <h1>Register</h1>
+  <form method="POST">
+    {% csrf_token %}
+    <label for="user_type">User Type:</label>
+    <select name="user_type" id="user_type">
+      {% for user_type in user_type_choices %}
+        <option value="{{ user_type.0 }}">{{ user_type.1 }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Next</button>
+  </form>
+</body>
+</html>
