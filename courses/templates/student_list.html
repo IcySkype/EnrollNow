@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">{{ user.department }} - Student List</h1>
+
+<table class="table table-bordered">
+    <thead class="table-header">
+        <tr>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Year Level</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+        <tr>
+            <td>{{ student.user }}</td>
+            <td>{{ student.student_id }}</td>
+            <td>{{ student.year_level }}</td>
+            <td>
+              {% if student.enrollment_status|upper == 'UNENROLLED' %}
+                    <span style="color: white; background-color: #f44336; padding: 5px 10px; border-radius: 5px;">{{ student.enrollment_status|upper }}</span>
+                {% elif student.enrollment_status|upper == 'PENDING' %}
+                    <span style="color: white; background-color: #ff9800; padding: 5px 10px; border-radius: 5px;">{{ student.enrollment_status|upper }}</span>
+                {% elif student.enrollment_status|upper == 'APPROVED' %}
+                    <span style="color: white; background-color: #4CAF50; padding: 5px 10px; border-radius: 5px;">{{ student.enrollment_status|upper }}</span>
+                {% endif %}
+                </span>
+            </td>
+            <td>
+                <span class="btn btn-manage">
+                    <a href="{% url 'manage_subject_load' student.student_id %}" class="btn btn-manage" style="padding: 5px 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; cursor: pointer;">Manage Enrollment</a>
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .table-header th {
+        background-color: #f4f4f4;
+        color: #333;
+    }
+
+    .table-bordered {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-bordered th, .table-bordered td {
+        padding: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .table-bordered tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .table-bordered tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Status Styles */
+    .status-unenrolled {
+        color: white;
+        background-color: #f44336; /* Red for UNENROLLED */
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .status-pending {
+        color: white;
+        background-color: #ff9800; /* Orange for PENDING */
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .status-approved {
+        color: white;
+        background-color: #4CAF50; /* Green for APPROVED */
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Subject Offerings{% endblock %}
+
+{% block content %}
+<h1>Subject Offerings for SY. {{ current_academic_year }} - {% if current_semester == "Sum" %}Summer{%else%}{{ current_semester }}{%endif%} Semester</h1>
+
+<!-- Search Form -->
+<form method="GET" style="margin-bottom: 20px;">
+  <input type="text" name="q" placeholder="Search by code or instructor name" style="padding: 10px; width: 300px; margin-right: 10px;">
+  <button type="submit" style="padding: 10px 15px; background-color: #e91e63; color: white; border: none; cursor: pointer;">Search</button>
+</form>
+
+<!-- Table for Subject Offerings -->
+<table style="width: 100%; border-collapse: collapse;">
+  <tr>
+    <th>Offer Code</th>
+    <th>Course</th>
+    <th>Course Description</th>
+    <th>Instructor</th>
+    <th>Room</th>
+    <th>Schedule</th>
+    {% if user.user_type == 'instructor' %}
+    <th>Action</th>{% endif %}
+  </tr>
+
+  {% if object_list %}
+    {% for offering in object_list %}
+      <tr>
+        <td>{{ offering.offer_code }}</td>
+        <td>{{ offering.course }}</td>
+        <td>{{ offering.course.desc }}</td>
+        <td>{{ offering.instructor }}</td>
+        <td>{{ offering.room }}</td>
+
+        <!-- Displaying the day_schedules -->
+        <td>
+          {% for schedule in offering.day_schedules.all %}
+            {{ schedule.day.name }}: {{ schedule.start_time }} - {{ schedule.end_time }}<br>
+          {% endfor %}
+        </td>
+
+        <!-- Action Buttons (Conditional based on user type) -->
+        {% if user.user_type == 'instructor' %}
+        <td>
+            <!-- Edit and Delete for instructor/department head -->
+            <form action="{% url 'subject_offering_update' offering.pk %}" method="get" style="display: inline-block;">
+              {% csrf_token %}
+              <button type="submit" style="padding: 5px 10px; background-color: #FF9800; color: white; border: none; cursor: pointer;">Edit</button>
+            </form>
+            <form action="{% url 'subject_offering_delete' offering.pk %}" method="post" style="display: inline-block; margin-left: 10px;">
+              {% csrf_token %}
+              <button type="submit" style="padding: 5px 10px; background-color: #f44336; color: white; border: none; cursor: pointer;">Delete</button>
+            </form>
+        </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  {% else %}
+    <tr>
+      <td colspan="7" style="text-align: center; padding: 20px;">No offerings available for the current academic period.</td>
+    </tr>
+  {% endif %}
+</table>
+
+<!-- Create New Offering link for Department Head -->
+{% if user.instructor.is_department_head %}
+  <a href="{% url 'subject_offering_create' %}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #e91e63; color: white; text-decoration: none; border-radius: 5px;">Create New Offering</a>
+{% endif %}
+{% endblock %}

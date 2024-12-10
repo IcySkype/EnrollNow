@@ -1,0 +1,12 @@
+<h1>Enrollment Summary for {{ student.user }}</h1>
+
+<ul>
+    {% for subject in selected_subjects %}
+        <li>{{ subject.course.course_code }}</li>
+    {% endfor %}
+</ul>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">Finalize Enrollment</button>
+</form>

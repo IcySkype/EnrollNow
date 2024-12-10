@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Enrollment{% endblock %}
+
+{% block content %}
+    <h1>Manage Enrollment for {{ student.user.first_name }} {{ student.user.last_name }}</h1>
+
+    <div class="finish-selection">
+        <a href="{% url 'finalize_enrollment' subject_load_list.id %}" class="btn btn-success">Finish Subject Load Management</a>
+    </div>
+
+    <h3>Current Enrolled Subjects:</h3>
+    <table id="current-enrolled-subjects">
+        <thead>
+            <tr>
+                <th>Offer Code</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Instructor</th>
+                <th>Section</th>
+                <th>Room</th>
+                <th>Schedule</th>
+                <th>Total Units</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subject_details %}
+                <tr data-course-id="{{ subject.offer_code }}">
+                    <td>{{ subject.offer_code }}</td>
+                    <td>{{ subject.course_code }}</td>
+                    <td>{{ subject.desc }}</td>
+                    <td>{{ subject.instructor }}</td>
+                    <td>{{ subject.section }}</td>
+                    <td>{{ subject.room }}</td>
+                    <td>
+                        {% for schedule in subject.schedule %}
+                            {{ schedule.day.name }}: {{ schedule.start_time|time:"g:i a" }} - {{ schedule.end_time|time:"g:i a" }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>{{ subject.total_units }}</td>
+                    <td>
+                        <form method="post" action="{% url 'unenroll_course' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="subject_load_id" value="{{ subject.id }}">
+                            <button type="submit" class="btn btn-danger">Unenroll</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Add a New Subject:</h3>
+    <form id="course-search-form" method="get">
+        <input type="text" id="search-query" name="q" placeholder="Search for a course..." class="form-control">
+    </form>
+
+    <table id="search-results-table" class="table">
+        <thead>
+            <tr>
+                <th>Offer Code</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Instructor</th>
+                <th>Section</th>
+                <th>Room</th>
+                <th>Schedule</th>
+                <th>Total Units</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Results will be dynamically added here -->
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchForm = document.getElementById('course-search-form');
+            const searchQueryInput = document.getElementById('search-query');
+            const resultsTableBody = document.querySelector('#search-results-table tbody');
+            const enrolledSubjectsTableBody = document.querySelector('#current-enrolled-subjects tbody');
+
+            function isEnrolled(courseId) {
+                const enrolledSubjects = enrolledSubjectsTableBody.querySelectorAll('tr');
+                for (let row of enrolledSubjects) {
+                    if (row.dataset.courseId === courseId) {
+                        return true;
+                    }   
+                }
+                return false;
+            }
+
+            // Fetch courses and render
+            function fetchAndRenderCourses(query = '') {
+                fetch(`/courses/search_courses/?q=${encodeURIComponent(query)}&student_id={{ student.student_id }}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsTableBody = document.querySelector('#search-results-table tbody');
+                        resultsTableBody.innerHTML = ''; // Clear previous results
+
+                        data.results.forEach(course => {
+                            if (isEnrolled(course.offer_code)) {
+                                return;
+                            }
+                            const row = `
+                                <tr data-course-id="${course.offer_code}">
+                                    <td>${course.offer_code}</td>
+                                    <td>${course.course_code}</td>
+                                    <td>${course.desc}</td>
+                                    <td>${course.instructor || 'N/A'}</td>
+                                    <td>${course.section}</td>
+                                    <td>${course.room}</td>
+                                    <td>${course.schedule}</td>
+                                    <td>${course.total_units}</td>
+                                    <td>
+                                        <button class="btn btn-primary enroll-btn" data-course-id="${course.offer_code}">Enroll</button>
+                                    </td>
+                                </tr>
+                            `;
+                            resultsTableBody.insertAdjacentHTML('beforeend', row);
+                        });
+                    });
+            }
+
+            // Fetch enrolled subjects and render
+            function fetchAndRenderEnrolledSubjects() {
+                fetch(`/courses/enrollment_summary/${student.student_id}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        enrolledSubjectsTableBody.innerHTML = ''; // Clear previous enrolled subjects
+
+                        data.subject_loads.forEach(subject => {
+                            const row = `
+                                <tr data-course-id="${subject.offer_code}">
+                                    <td>${subject.offer_code}</td>
+                                    <td>${subject.course_code}</td>
+                                    <td>${subject.desc}</td>
+                                    <td>${subject.instructor}</td>
+                                    <td>${subject.section}</td>
+                                    <td>${subject.room}</td>
+                                    <td>${subject.schedule}</td>
+                                    <td>${subject.total_units}</td>
+                                    <td>
+                                        <form method="post" class="unenroll-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="subject_load_id" value="${subject.id}">
+                                            <button type="submit" class="btn btn-danger unenroll-btn">Unenroll</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            `;
+                            enrolledSubjectsTableBody.insertAdjacentHTML('beforeend', row);
+                        });
+                    });
+            }
+
+            // Enroll course
+            resultsTableBody.addEventListener('click', function (event) {
+                if (event.target.classList.contains('enroll-btn')) {
+                    const courseId = event.target.getAttribute('data-course-id');
+
+                    fetch(`{% url 'enroll_course' %}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ offer_code: courseId, student_id: '{{ student.student_id }}' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Course successfully enrolled!');
+                                // Remove enrolled course from search results
+                                resultsTableBody.querySelector(`[data-course-id="${courseId}"]`).remove();
+                                // Refresh enrolled subjects
+                                window.location.reload();
+                            } else {
+                                alert('Failed to enroll: ' + data.error);
+                            }
+                        });
+                }
+            });
+
+            // Unenroll course
+            enrolledSubjectsTableBody.addEventListener('click', function (event) {
+                if (event.target.classList.contains('unenroll-btn')) {
+                    const form = event.target.closest('form');
+                    const subjectLoadId = form.querySelector('input[name="subject_load_id"]').value;
+
+                    fetch(`{% url 'unenroll_course' %}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded"',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: new URLSearchParams({ subject_load_id: subjectLoadId }).toString()
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Course successfully unenrolled!');
+                                // Remove unenrolled course from enrolled subjects
+                                enrolledSubjectsTableBody.querySelector(`[data-course-id="${subjectLoadId}"]`).remove();
+                                // Re-fetch courses to update the search results
+                                fetchAndRenderCourses(searchQueryInput.value);
+                            } else {
+                                alert('Failed to unenroll: ' + data.message);
+                            }
+                        });
+                }
+            });
+
+            // Initial fetches
+            fetchAndRenderCourses();
+            fetchAndRenderEnrolledSubjects();
+
+            // Real-time search
+            searchQueryInput.addEventListener('input', function () {
+                event.preventDefault();
+                const query = this.value;
+                fetchAndRenderCourses(searchQueryInput.value);
+            });
+        });
+    </script>
+{% endblock %}

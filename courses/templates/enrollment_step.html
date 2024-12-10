@@ -1,0 +1,162 @@
+<form method="post">
+    {% csrf_token %}
+    <!-- Display student info -->
+    <h3>Student Information</h3>
+    <p>{{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.student.year_level }})</p>
+
+    <h3>Subject Enrollment</h3>
+    <!-- Table of subjects the student is enrolled in -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Offer Number</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Instructor</th>
+                <th>Section</th>
+                <th>Timeslot</th>
+                <th>Room</th>
+                <th>Days</th>
+                <th>Lab Units</th>
+                <th>Lecture Units</th>
+                <th>Total Units</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in enrolled_subjects %}
+            <tr id="subject-row-{{ subject.id }}">
+                <td>{{ subject.subject.offer_code }}</td>
+                <td>{{ subject.subject.course.course_code }}</td>
+                <td>{{ subject.subject.course.desc }}</td>
+                <td>{{ subject.subject.instructor.name }}</td>
+                <td>{{ subject.subject.section }}</td>
+                <td>{{ subject.subject.time_slot }}</td>
+                <td>{{ subject.subject.room }}</td>
+                <td>{{ subject.subject.days.all|join:", " }}</td>
+                <td>{{ subject.subject.course.lab_units }}</td>
+                <td>{{ subject.subject.course.lecture_units }}</td>
+                <td>{{ subject.subject.course.total_units }}</td>
+                <td><button type="button" class="btn btn-danger remove-button" onclick="removeSubject({{ subject.id }})">Remove</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h4>Total Units: {{ total_units }}</h4>
+
+    <!-- Subject search with real-time filtering -->
+    <div>
+        <input type="text" id="subjectSearch" placeholder="Search Subjects">
+    </div>
+    <table class="table" id="subjectTable">
+        <thead>
+            <tr>
+                <th>Offer Number</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Instructor</th>
+                <th>Section</th>
+                <th>Timeslot</th>
+                <th>Room</th>
+                <th>Days</th>
+                <th>Units</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subject_offerings %}
+            <tr>
+                <td>{{ subject.offer_code }}</td>
+                <td>{{ subject.course.course_code }}</td>
+                <td>{{ subject.course.desc }}</td>
+                <td>{{ subject.instructor.name }}</td>
+                <td>{{ subject.section }}</td>
+                <td>{{ subject.time_slot }}</td>
+                <td>{{ subject.room }}</td>
+                <td>{{ subject.days.all|join:", " }}</td>
+                <td>{{ subject.course.total_units }}</td>
+                <td><button type="button" class="btn btn-primary add-button" onclick="addSubject({{ subject.id }})">Add</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button type="submit" class="btn btn-success">Enroll</button>
+</form>
+
+<script>
+    // Real-time filtering for subjects
+    document.getElementById('subjectSearch').addEventListener('input', function(e) {
+        const searchQuery = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#subjectTable tbody tr');
+        rows.forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            const subjectCode = cells[1].innerText.toLowerCase();
+            const description = cells[2].innerText.toLowerCase();
+            if (subjectCode.includes(searchQuery) || description.includes(searchQuery)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+
+<script>
+    function addSubject(subjectId) {
+    $.ajax({
+        url: "{% url 'add_subject' subject_id=0 %}".replace('0', subjectId), // URL for adding subject
+        method: "GET",
+        success: function(response) {
+            alert(response.message);  // Optionally, show the message in a more user-friendly way
+
+            if (response.message === "Subject added successfully.") {
+                // Create a new row dynamically using the subject details returned in response
+                var subjectRow = "<tr id='subject-row-" + subjectId + "'>" +
+                                 "<td>" + response.offer_code + "</td>" +
+                                 "<td>" + response.course_code + "</td>" +
+                                 "<td>" + response.description + "</td>" +
+                                 "<td>" + response.instructor + "</td>" +
+                                 "<td>" + response.section + "</td>" +
+                                 "<td>" + response.time_slot + "</td>" +
+                                 "<td>" + response.room + "</td>" +
+                                 "<td>" + response.days + "</td>" +
+                                 "<td>" + response.lab_units + "</td>" +
+                                 "<td>" + response.lecture_units + "</td>" +
+                                 "<td>" + response.total_units + "</td>" +
+                                 "<td><button type='button' class='btn btn-danger remove-button' onclick='removeSubject(" + subjectId + ")'>Remove</button></td>" +
+                                 "</tr>";
+
+                // Append the new row to the enrolled subjects table
+                $('#subjectTable').append(subjectRow);
+                
+                // Remove the subject from the available subjects list
+                $('#subject-row-' + subjectId).hide();  // Optionally hide or remove the row
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error adding subject: ", error);
+        }
+    });
+}
+</script>
+
+<script>
+    // Remove subject from the student's load list
+    function removeSubject(subjectId) {
+        $.ajax({
+            url: "{% url 'remove_subject' subject_id=0 %}".replace('0', subjectId), // URL for removing subject
+            method: "GET",
+            success: function(response) {
+                // Show a message or update the UI
+                alert(response.message);  // Optionally, show the message in a more user-friendly way
+                // Optionally, remove the subject row from the UI
+                $('#subject-row-' + subjectId).remove();  // This will remove the row with this subjectId
+            },
+            error: function(xhr, status, error) {
+                console.error("Error removing subject: ", error);
+            }
+        });
+    }
+</script>

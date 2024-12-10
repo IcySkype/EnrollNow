@@ -1,0 +1,6 @@
+<h1>Delete Subject Offering</h1>
+<p>Are you sure you want to delete "{{ object.course }} - {{ object.instructor }}"?</p>
+<form method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Yes, delete">
+</form>

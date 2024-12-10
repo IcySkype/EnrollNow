@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .form-container {
+            margin: 0 auto;
+            width: 8.5in;
+            height: 5.5in;
+            padding: 1in; /* Inner padding */
+            border: 1px solid #000;
+            position: relative;
+            page-break-after: always;
+        }
+
+        @page {
+            size: letter;
+            margin: 0in;
+        }
+
+        h2, p {
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            border: 1px solid #000;
+            padding: 3px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- Top Section -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2>ILIGAN MEDICAL CENTER COLLEGE</h2>
+            <p>San Miguel Village, Pala-o</p>
+            <p>Iligan City</p>
+        </div>
+
+        <!-- Copy Type (Bottom Left) -->
+        <div style="position: absolute; bottom: 10px; left: 10px;">
+            {% if copy_type == "Cashier's Copy" %}
+            <p><strong>Date:_______________</strong> <strong>OR Number:_______________</strong> <strong>Amount:_______________</strong> <strong>Recipient's Signature:_______________</strong></p>
+            {% endif %}
+            <strong>{{ copy_type }}</strong>
+        </div>
+
+        <div style="position: absolute; bottom: 50px; right: 50px;">
+            {% if copy_type == "Registrar's Copy" %}
+            <strong>Approved by:</strong>
+            <div style="text-align: center; margin-top: 10px;">
+                <p>__________________</p>
+                <p>Dean's Signature</p>
+                <p>Date:_____________</p>
+            </div>
+            {% elif copy_type == "Student's Copy" %}
+            <div style="text-align: center; margin-top: 10px;">
+                <p>__________________</p>
+                <p>Student's Signature</p>
+                <strong>Approved by:</strong>
+                <p style="word-spacing: 10px;">__________________     __________________</p>
+                <p style="word-spacing: 10px;">Registrar's Signature      Dean's Signature</p>
+            </div>
+            {% elif copy_type == "Dean's Copy" %}
+            <strong>Approved by:</strong>
+            <div style="text-align: center; margin-top: 10px;">
+                <p>__________________</p>
+                <p>Registrar's Signature</p>
+                <p>Date:_____________</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Form Content -->
+        {% if copy_type == "Registrar's Copy" %}
+        <h3>REGISTRATION FORM</h3>
+        <p><strong>NAME:</strong> {{ student.user.last_name|upper }}, {{ student.user.first_name|upper }} {{ student.user.middlename|upper }}
+        <strong>Course:</strong> {{ student.degree_program }} Yr.{{ student.year_level }} <strong>ID No.:</strong> {{ student.student_id }} <strong>Dept:</strong> {{ student.user.department.shortname }}</p>
+        <p><strong>TERM PERIOD:</strong> {{ current_semester }} S.Y. {{ current_year }}</p>
+        <p><strong>DATE OF REGISTRATION:</strong> {{ today }} <input type="checkbox" id="{{ choice.0 }}" name="{{ choice.0 }}">
+            <label for="{{ choice.0 }}">Old/Returnee</label> <input type="checkbox" id="{{ choice.1 }}" name="{{ choice.1 }}">
+                <label for="{{ choice.1 }}">New/Transferee</label></p>
+        <p><strong>NCEE/NSAT RATING:____________</strong> <strong>School Last Attended & Year:__________________________</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offer No.</th>
+                    <th>Course Code</th>
+                    <th>Description</th>
+                    <th>Instructor</th>
+                    <th>Section</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Days</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.subject.offer_code }}</td>
+                    <td>{{ course.subject.course.course_code }}</td>
+                    <td>{{ course.subject.course.desc }}</td>
+                    <td>{{ course.subject.instructor.user.last_name }}</td>
+                    <td>{{ course.subject.section }}</td>
+                    <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.start_time }} - {{ schedule.end_time }}{% endfor %}</td>
+                    <td>{{ course.subject.room }}</td>
+                    <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.day.name }}{% endfor %}</td>
+                    <td>{{ course.subject.get_total_units }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Total Units:</strong> {{ total_units }}</p>
+
+        {% elif copy_type == "Student's Copy" %}
+        <p><strong>NAME:</strong> {{ student.user.last_name|upper }}, {{ student.user.first_name|upper }} {{ student.user.middlename|upper }}
+        <strong>Course:</strong> {{ student.degree_program }} Yr.{{ student.year_level }} <strong>ID No.:</strong> {{ student.student_id }} <strong>Dept:</strong> {{ student.user.department.shortname }}</p>
+        <p><strong>TERM PERIOD:</strong> {{ current_semester }} </p>
+        <p><strong>DATE OF REGISTRATION:</strong> {{ today }} <strong>S.Y.</strong> {{ current_year }} :{{ current_semester }} Sem. <strong>Category:</strong><input type="checkbox" id="{{ choice.0 }}" name="{{ choice.0 }}">
+            <label for="{{ choice.0 }}">Old/Returnee</label> <input type="checkbox" id="{{ choice.1 }}" name="{{ choice.1 }}">
+                <label for="{{ choice.1 }}">New/Transferee</label></p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Offer No.</th>
+                            <th>Course Code</th>
+                            <th>Description</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Units</th>
+                            <th>Instructor</th>
+                            <th>Days</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                        <tr>
+                            <td>{{ course.subject.offer_code }}</td>
+                            <td>{{ course.subject.course.course_code }}</td>
+                            <td>{{ course.subject.course.desc }}</td>
+                            <td>{{ course.subject.instructor.user.last_name }}</td>
+                            <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.start_time }} - {{ schedule.end_time }}{% endfor %}</td>
+                            <td>{{ course.subject.room }}</td>
+                            <td>{{ course.subject.get_total_units }}</td>
+                            <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.day.name }}{% endfor %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p><strong>Total Units:</strong> {{ total_units }}</p>
+        {% elif copy_type == "Dean's Copy" %}
+        <h3>REGISTRATION FORM</h3>
+        <p><strong>NAME:</strong> {{ student.user.last_name|upper }}, {{ student.user.first_name|upper }} {{ student.user.middlename|upper }}
+        <strong>Course:</strong> {{ student.degree_program }} Yr.{{ student.year_level }} <strong>ID No.:</strong> {{ student.student_id }} <strong>Dept:</strong> {{ student.user.department.shortname }}</p>
+        <p><strong>TERM PERIOD:</strong> {{ current_semester }} S.Y. {{ current_year }}</p>
+        <p><strong>DATE OF REGISTRATION:</strong> {{ today }} <input type="checkbox" id="{{ choice.0 }}" name="{{ choice.0 }}">
+            <label for="{{ choice.0 }}">Old/Returnee</label> <input type="checkbox" id="{{ choice.1 }}" name="{{ choice.1 }}">
+                <label for="{{ choice.1 }}">New/Transferee</label></p>
+        <p><strong>NCEE/NSAT RATING:____________</strong> <strong>School Last Attended & Year:__________________________</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offer No.</th>
+                    <th>Course Code</th>
+                    <th>Description</th>
+                    <th>Instructor</th>
+                    <th>Section</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Days</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.subject.offer_code }}</td>
+                    <td>{{ course.subject.course.course_code }}</td>
+                    <td>{{ course.subject.course.desc }}</td>
+                    <td>{{ course.subject.instructor.user.last_name }}</td>
+                    <td>{{ course.subject.section }}</td>
+                    <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.start_time }} - {{ schedule.end_time }}{% endfor %}</td>
+                    <td>{{ course.subject.room }}</td>
+                    <td>{% for schedule in course.subject.day_schedules.all %}{{ schedule.day.name }}{% endfor %}</td>
+                    <td>{{ course.subject.get_total_units }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Total Units:</strong> {{ total_units }}</p>
+        {% elif copy_type == "Cashier's Copy" %}
+        <p><strong>NAME:</strong> {{ student.user.last_name|upper }}, {{ student.user.first_name|upper }} {{ student.user.middlename|upper }}
+        <strong>Course:</strong> {{ student.degree_program }} Yr.{{ student.year_level }} <strong>ID No.:</strong> {{ student.student_id }} <strong>Dept:</strong> {{ student.user.department.shortname }}</p>
+        <p><strong>TERM PERIOD:</strong> {{ current_semester }} <strong> Category:</strong><input type="checkbox" id="{{ choice.0 }}" name="{{ choice.0 }}">
+            <label for="{{ choice.0 }}">Old/Returnee</label> <input type="checkbox" id="{{ choice.1 }}" name="{{ choice.1 }}">
+                <label for="{{ choice.1 }}">New/Transferee</label></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offer No.</th>
+                    <th>Course Code</th>
+                    <th>Description</th>
+                    <th>Lab Units</th>
+                    <th>Lec Units</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.subject.offer_code }}</td>
+                    <td>{{ course.subject.course.course_code }}</td>
+                    <td>{{ course.subject.course.desc }}</td>
+                    <td>{{ course.subject.course.units_lab }}</td>
+                    <td>{{ course.subject.course.units_lec }}</td>
+                    <td>{{ course.subject.get_total_units }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Total Units:</strong> {{ total_units }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

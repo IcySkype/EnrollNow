@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultation Appointments{% endblock %}
+
+{% block content %}
+<h1>Consultation Request Details</h1>
+
+<p><strong>Student:</strong> {{ consultation_request.student }}</p>
+<p><strong>Instructor:</strong> {{ consultation_request.instructor }}</p>
+<p><strong>Date:</strong> {{ consultation_request.date }}</p>
+<p><strong>Time:</strong> {{ consultation_request.start_time }} - {{ consultation_request.end_time }}</p>
+<p><strong>Reason:</strong> {{ consultation_request.reason }}</p>
+<p><strong>Status:</strong> {{ consultation_request.approved|yesno:"Approved,Pending" }}</p>
+
+<a href="{% url 'appointment_list' %}">Back to List</a>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Enrollment Management{% endblock %}
+
+{% block content %}
+    <h1>Enrollment for {{ subject_load_list.student.user.first_name }} {{ subject_load_list.student.user.last_name }}</h1>
+    <h2> Status: {% if subject_load_list.approval %}Approved{% else %}Pending{% endif %}</h2>
+    
+    <h3>Current Enrolled Subjects:</h3>
+    <table id="current-enrolled-subjects" class="table">
+        <thead>
+            <tr>
+                <th>Offer Code</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Instructor</th>
+                <th>Section</th>
+                <th>Room</th>
+                <th>Schedule</th>
+                <th>Total Units</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subject_details %}
+                <tr>
+                    <td>{{ subject.offer_code }}</td>
+                    <td>{{ subject.course_code }}</td>
+                    <td>{{ subject.desc }}</td>
+                    <td>{{ subject.instructor }}</td>
+                    <td>{{ subject.section }}</td>
+                    <td>{{ subject.room }}</td>
+                    <td>
+                        {% for schedule in subject.schedule %}
+                            {{ schedule.day.name }}: {{ schedule.start_time|time:"g:i a" }} - {{ schedule.end_time|time:"g:i a" }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>{{ subject.total_units }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if user.user_type == 'student' %}
+        {% if subject_load_list.approval %}
+            <p>Your application is approved. You may print the form here.</p>
+            <a href="{% url 'generate_registration_form' subject_load_list.id %}" class="btn btn-primary">Download Registration Form</a>
+        {% else %}
+            <p>Your application is being reviewed. Please wait until approval.</p>
+            <a href="{% url 'manage_subject_load' subject_load_list.student.student_id %}" class="btn btn-primary">Manage</a>
+        {% endif %}
+    {% elif user.user_type == 'instructor' %}
+        <a href="{% url 'manage_subject_load' subject_load_list.student.student_id %}" class="btn btn-primary">Manage</a>
+        {% if subject_load_list.approval %}
+            <p>Application is approved. You may print the form here.</p>
+            <a href="{% url 'generate_registration_form' subject_load_list.id %}" class="btn btn-primary">Download Registration Form</a>
+        {% else %}
+            <div>
+                <form method="post" action="{% url 'finalize_enrollment' subject_load_list.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="approve" class="btn btn-success">Approve All</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

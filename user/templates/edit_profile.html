@@ -1,0 +1,14 @@
+<h1>Edit Profile</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ user_form.as_p }}
+  {% if user.user_type == 'student' %}
+    {{ student_form.as_p }}
+  {% elif user.user_type == 'instructor' %}
+    {{ instructor_form.as_p }}
+  {% endif %}
+  <button type="submit">Save Changes</button>
+</form>
+
+<a href="{% url 'change_password' %}">Change Password</a>

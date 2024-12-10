@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Courses{% endblock %}
+
+{% block content %}
+<!-- Main content for Courses -->
+<div class="container-fluid">
+    <div>
+        
+        <!-- Main content -->
+        <div>
+            <div>
+                <h1 class="mb-4">Courses</h1>
+                
+                <!-- Search Form -->
+                <form method="GET" class="mb-3">
+                    <input type="text" name="q" class="form-control d-inline-block" style="width: auto;" placeholder="Search by course code or description">
+                    <button type="submit" class="btn submit-button" style="padding: 10px 15px; background-color: #e91e63; color: white; border: none; cursor: pointer;">Search</button>
+                </form>
+                
+                <!-- Course Table -->
+                <table class="table table-bordered">
+                    <thead class="table-header">
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Description</th>
+                            <th>Lab Units</th>
+                            <th>Lecture Units</th>
+                            <th>Total Units</th>
+                            <th>Prerequisites</th>
+                            {% if user.user_type == 'instructor' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in course_list %}
+                            <tr>
+                                <td>{{ course.course_code }}</td>
+                                <td>{{ course.desc }}</td>
+                                <td>{{ course.units_lab }}</td>
+                                <td>{{ course.units_lec }}</td>
+                                <td>{{ course.get_total_units }}</td>
+                                <td>
+                                    {% for prereq in course.prereq.all %}
+                                        {{ prereq }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% if user.user_type == 'instructor' %}
+                                <td>
+                                    <div class="btn-group" style="display: flex; gap: 10px;">
+                                        <a href="{% url 'course_update' course.pk %}" class="btn btn-edit" style="padding: 5px 10px; background-color: #FF9800; color: white; text-decoration: none; border-radius: 5px; cursor: pointer;">Edit</a>
+                                        <a href="{% url 'course_delete' course.pk %}" class="btn btn-delete" style="padding: 5px 10px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px; cursor: pointer;">Delete</a>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Link to Create New Course -->
+                <a href="{% url 'course_create' %}" class="btn submit-button" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #e91e63; color: white; text-decoration: none; border-radius: 5px;">Create New Course</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

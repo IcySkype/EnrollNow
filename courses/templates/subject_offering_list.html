@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}My {% if is_instructor %}Handled{% elif is_student %}Enrolled{% endif %} Subjects{% endblock %}
+
+{% block content %}
+<h1>My {% if is_instructor %}Handled{% elif is_student %}Enrolled{% endif %} Subjects for SY. {{ current_academic_year }} - {% if current_semester == "Sum" %}Summer{%else%}{{ current_semester }}{%endif%} Semester</h1>
+
+<!-- Table for Subject Offerings -->
+<table style="width: 100%; border-collapse: collapse;">
+  <tr>
+    <th>Offer Code</th>
+    <th>Course</th>
+    <th>Course Description</th>
+    {% if is_student  %}
+    <th>Instructor</th>
+    {% endif %}
+    <th>Room</th>
+    <th>Schedule</th>
+    {% if is_instructor  %}
+        <th>Actions</th>
+    {% endif %}
+  </tr>
+  
+  {% if is_instructor  %}
+    {% for subject in handled_subjects %}
+      <tr>
+        <td>{{ subject.offer_code }}</td>
+        <td>{{ subject.course.course_code }}</td>
+        <td>{{ subject.course.desc }}</td>
+        <td>{{ subject.room }}</td>
+
+        <!-- Displaying the day_schedules -->
+        <td>
+          {% for schedule in subject.day_schedules.all %}
+            {{ schedule.day.name }}: {{ schedule.start_time }} - {{ schedule.end_time }}<br>
+          {% endfor %}
+        </td>
+        <td> <a href="#">View Students</a> </td>
+      </tr>
+    {% endfor %}
+  {% elif is_student %}
+  {% for subject in enrolled_subjects %}
+      <tr>
+        <td>{{ subject.subject.offer_code }}</td>
+        <td>{{ subject.subject.course.course_code }}</td>
+        <td>{{ subject.subject.course.desc }}</td>
+        <td>{{ subject.subject.instructor }}</td>
+        <td>{{ subject.subject.room }}</td>
+
+        <!-- Displaying the day_schedules -->
+        <td>
+          {% for schedule in subject.subject.day_schedules.all %}
+            {{ schedule.day.name }}: {{ schedule.start_time }} - {{ schedule.end_time }}<br>
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+  {% else %}
+    <tr>
+      <td colspan="7" style="text-align: center; padding: 20px;">No {% if is_instructor %}assigned{% elif is_student %}enrolled{% endif %} subjects for the current academic period.</td>
+    </tr>
+  {% endif %}
+</table>
+
+{% endblock %}

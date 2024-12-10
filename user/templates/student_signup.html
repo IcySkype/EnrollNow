@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sign Up</title>
+    <style>
+        /* Overall layout */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f8bbd0;  /* Lighter pink background */
+            justify-content: center;  /* Center content horizontally */
+            align-items: center;  /* Center content vertically */
+            overflow-y: auto;  /* Enable vertical scrolling */
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 800px;  /* Increased max-width for a wider form container */
+            padding: 20px;
+            overflow: auto;  /* Allow scrolling if content overflows */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #e91e63;  /* Pink color for header */
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;  /* Center the heading */
+            scroll-margin-top: 20px;  /* Ensure the heading is not cut off when scrolling */
+        }
+
+        .signup-form-container {
+            background-color: rgba(255, 255, 255, 0.8);  /* Transparent white background */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Slight shadow for depth */
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;  /* Limit the height of the form container */
+            overflow-y: auto;  /* Enable scrolling within the form container */
+        }
+
+        .signup-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        /* Targeting form-control inputs to make them larger */
+        .form-control {
+            width: 100%;
+            padding: 15px;  /* Increase padding to make the fields taller */
+            font-size: 1.2rem;  /* Increase font size */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #e91e63;  /* Pink background for button */
+            color: white;
+            padding: 15px;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #c2185b;  /* Darker pink on hover */
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .back-link a {
+            color: #e91e63;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        /* Responsive adjustment for smaller screens */
+        @media (max-width: 600px) {
+            .signup-container {
+                padding: 15px;
+                max-width: 100%;  /* Allow the container to be 100% wide on small screens */
+            }
+
+            h1 {
+                font-size: 2rem;  /* Reduce font size of the heading on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-container">
+    <h1 id="signup-title">Student Sign Up</h1>
+
+    <div class="signup-form-container">
+        <form method="POST" class="signup-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit">Sign Up</button>
+        </form>
+        <div class="back-link">
+            <a href="{% url 'login' %}">Back to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Focus the header on page load to ensure it stays visible and centered
+    document.getElementById('signup-title').scrollIntoView({behavior: 'smooth'});
+</script>
+
+</body>
+</html>

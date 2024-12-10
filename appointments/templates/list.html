@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultation Appointments{% endblock %}
+
+{% block content %}
+{% if request.user.user_type == 'instructor' %}
+{% if consultation_requests %}
+<table>
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in consultation_requests %}
+        <tr>
+            <td>{{ request.student }}</td>
+            <td>{{ request.date }}</td>
+            <td>{{ request.start_time }} - {{ request.end_time }}</td>
+            <td>{{ request.reason }}</td>
+            <td>{{ request.approved|yesno:"Approved,Pending" }}</td>
+            <td>
+                {% if not request.approved %}
+                    <form method="post" action="{% url 'appointment_approve' request.pk %}">
+                        {% csrf_token %}
+                        <button type="submit">Approve</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else%}
+<h2>No consultation requests.</h2>
+{% endif %}
+{% elif request.user.user_type == 'student' %}
+{% if consultation_requests %}
+<h1>Your Consultation Requests</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Instructor</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in consultation_requests %}
+        <tr>
+            <td>{{ request.instructor }}</td>
+            <td>{{ request.date }}</td>
+            <td>{{ request.start_time }} - {{ request.end_time }}</td>
+            <td>{{ request.approved|yesno:"Approved,Pending" }}</td>
+            <td>
+                <a href="{% url 'appointment_detail' request.pk %}">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else%}
+<h2>No consultation requests.</h2>
+{% endif %}
+<a href="{% url 'appointment_create' %}">Request Consultation</a>
+{% endif %}
+
+{% endblock %}

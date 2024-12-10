@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My App{% endblock %}</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    {% block extra_styles %}{% endblock %}
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #000;
+        }
+
+        /* Color theme for sidebar and topbar */
+        .bg-pink {
+            background-color: #e91e63;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        /* Sidebar */
+        .wrapper {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #e91e63;
+            padding-top: 20px;
+            position: fixed;
+            height: 100%;
+            transition: all 0.3s ease;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .sidebar.closed {
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 15px 20px;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar ul li.active {
+            background-color: #d81b60;
+        }
+
+        .sidebar ul li:hover {
+            background-color: #c2185b;
+        }
+
+        .sidebar ul li button {
+            color: white;
+            background: none;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* Content Area */
+        .content {
+            margin-left: 250px;
+            width: calc(100% - 250px); /* Ensures content spans the full width minus sidebar width */
+            padding: 20px;
+            background-color: white;
+            color: black;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh; /* Ensure content takes full height */
+        }
+
+        .content.shifted {
+            margin-left: 0;
+            width: 100%; /* Full width when sidebar is closed */
+        }
+
+        /* Top bar */
+        .top-bar {
+            background-color: #e91e63;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .top-bar .logo {
+            font-size: 24px;
+        }
+
+        .top-bar .sidebar-toggle-btn {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .top-bar .user-info {
+            margin-right: 15px;
+        }
+
+        .top-bar .logout-btn {
+            background-color: #e91e63; /* Pink background */
+            color: white; /* White text */
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .top-bar .logout-btn:hover {
+            background-color: #c2185b; /* Darker pink on hover */
+        }
+
+        .main-content {
+            margin-top: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul>
+            <li class="active"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'appointment_list' %}">Appointments</a></li>
+            <li><a href="{% url 'subject_offering_list' %}">Subject Offerings</a></li>
+            {% if user.student %}
+            <li><a href="{% url 'my_subjects' %}">My Enrolled Subjects</a></li>
+            <li><a href="{% url 'manage_subject_load' user.student.student_id %}">Enroll Me</a></li>
+            <li><a href="{% url 'student_profile_edit' %}">Edit Student Information</a></li>
+            {% endif %}
+            {% if user.instructor %}
+            <li><a href="{% url 'my_subjects' %}">Handled Subjects</a></li>
+            <li><a href="{% url 'select_student' %}">Enroll Student</a></li>
+            {% endif %}
+            {% if user.instructor.is_department_head %}
+            <li><a href="{% url 'course_list' %}">Manage Courses</a></li>
+            <li><a href="{% url 'subject_offering_list' %}">Manage Subject Offerings</a></li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <!-- Content Area -->
+    <div class="content">
+        <!-- Top bar -->
+        <div class="top-bar">
+            <div class="sidebar-toggle-btn" onclick="toggleSidebar()">&#60;</div>
+            <div class="logo">EnrollNow</div>
+            <div class="user-info">Logged in as {{ user.username }}</div>
+            <!-- Logout Button -->
+            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+
+        <!-- Main content -->
+        <div class="main-content">
+            {% block content %}
+            <!-- Dynamic content will go here -->
+            {% endblock %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('.content');
+        const toggleBtn = document.querySelector('.sidebar-toggle-btn');
+        
+        sidebar.classList.toggle('closed');
+        content.classList.toggle('shifted');
+        
+        // Change toggle button text depending on the sidebar state
+        if (sidebar.classList.contains('closed')) {
+            toggleBtn.innerHTML = '&#62;';  // '>' when sidebar is closed
+        } else {
+            toggleBtn.innerHTML = '&#60;';  // '<' when sidebar is open
+        }
+    }
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

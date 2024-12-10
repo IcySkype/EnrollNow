@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Subject Offering{% endblock %}
+
+{% block content %}
+    <h1>{% if object %}Edit{% else %}Create{% endif %} Subject Offering</h1>
+    <form method="post" id="subject-offering-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <h3>Day Schedules</h3>
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="day-schedule-form">
+                    <input type="hidden" name="day_schedule-{{ forloop.counter0 }}-day" value="{{ day }}">
+                    <label>{{ day_name }}</label>
+                    <label>Start Time</label>
+                    <input type="time" name="start_time_{{ day }}" value="{{ form.start_time.value }}">
+                    <label>End Time</label>
+                    <input type="time" name="end_time_{{ day }}" value="{{ form.end_time.value }}">
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const dayNames = {
+            1: "Sunday",
+            2: "Monday",
+            3: "Tuesday",
+            4: "Wednesday",
+            5: "Thursday",
+            6: "Friday",
+            7: "Saturday"
+        };
+
+        const formsetContainer = $('#formset-container');
+        const daysField = $('input[name="days"]'); // Adjusted to reflect checkbox input name
+
+        function updateFormset(selectedDays) {
+            const existingDays = formsetContainer.find('input[name="day"]').map(function () {
+                return $(this).val();
+            }).get();
+
+            // Remove unselected days
+            existingDays.forEach(day => {
+                if (!selectedDays.includes(day)) {
+                    formsetContainer.find(`input[value="${day}"]`).closest('.day-schedule-form').remove();
+                }
+            });
+
+            // Add new days
+            selectedDays.forEach(day => {
+                if (!existingDays.includes(day)) {
+                    const dayName = dayNames[day] || "Unknown Day";
+                    const newFormHtml = `
+                        <div class="day-schedule-form">
+                            <input type="hidden" name="day" value="${day}">
+                            <label>${dayName}</label>
+                            <label>Start Time</label>
+                            <input type="time" name="start_time_${day}">
+                            <label>End Time</label>
+                            <input type="time" name="end_time_${day}">
+                        </div>`;
+                    formsetContainer.append(newFormHtml);
+                }
+            });
+        }
+
+        daysField.change(function () {
+            const selectedDays = daysField.filter(':checked').map(function () {
+                return $(this).val();
+            }).get();
+            updateFormset(selectedDays);
+        });
+    </script>
+{% endblock %}

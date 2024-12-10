@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultation Appointments{% endblock %}
+
+{% block content %}
+<h1>Request a Consultation</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+</form>
+<a href="{% url 'appointment_list' %}">Back to List</a>
+{% endblock %}

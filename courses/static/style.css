@@ -1,0 +1,25 @@
+.sidebar {
+    background-color: #f8f9fa;
+    height: 100vh;
+    padding-top: 20px;
+}
+.content {
+    padding: 20px;
+}
+.top-bar {
+    background-color: #F02D73;
+    color: white;
+    padding: 10px;
+}
+.table-header {
+    background-color: #F02D73;
+    color: white;
+}
+.edit-button {
+    background-color: #F02D73;
+    border: none;
+}
+.submit-button {
+    background-color: #F02D73;
+    border: none;
+}

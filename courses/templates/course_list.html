@@ -1,0 +1,24 @@
+<h1>Courses</h1>
+<form method="GET">
+    <input type="text" name="q" placeholder="Search by course code or description">
+    <button type="submit">Search</button>
+</form>
+<ul>
+    {% for course in course_list %}
+        <li>
+            <strong>Course Code:</strong> {{ course.course_code }}<br>
+            <strong>Description:</strong> {{ course.desc }}<br>
+            <strong>Lab:</strong> {{ course.units_lab }}<br>
+            <strong>Lecture:</strong> {{ course.units_lec }}<br>
+            <strong>Total Units:</strong> {{ course.get_total_units }}<br>
+            <strong>Prerequisites:</strong>
+                {% for prereq in course.prereq.all %}
+                    {{ prereq }}
+                {% endfor %}
+            <br>
+            <a href="{% url 'course_update' course.pk %}">Edit</a>
+            <a href="{% url 'course_delete' course.pk %}">Delete</a>
+        </li>
+    {% endfor %}
+</ul>
+<a href="{% url 'course_create' %}">Create New Course</a>

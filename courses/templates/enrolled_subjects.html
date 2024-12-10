@@ -1,0 +1,6 @@
+<h1>Enrolled Subjects</h1>
+<ul>
+  {% for subject_load in object_list %}
+    <li>{{ subject_load.subject.course.course_code }} - {{ subject_load.subject.course.desc }}</li>
+  {% endfor %}
+</ul>

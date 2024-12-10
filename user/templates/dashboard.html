@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>   
+    {% endif %}
+
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">Hello, {{ user.first_name }}!</h1>
+        <p class="dashboard-description">Logged in as {{ user }}, IMCC {{ user.user_type }}.</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr class="bg-light-gray">
+                        <th class="text-uppercase">Time</th>
+                        <th class="text-uppercase">Sunday</th>
+                        <th class="text-uppercase">Monday</th>
+                        <th class="text-uppercase">Tuesday</th>
+                        <th class="text-uppercase">Wednesday</th>
+                        <th class="text-uppercase">Thursday</th>
+                        <th class="text-uppercase">Friday</th>
+                        <th class="text-uppercase">Saturday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in processed_schedule %}
+                        <tr>
+                            <td>{{ row.time_block }}</td>
+                            {% for events in row.events %}
+                                <td>
+                                    {% if events %}
+                                        <ul>
+                                            {% for event in events %}
+                                                <li>{{ event.course }} ({{ event.time }})</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <span>No events</span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
